@@ -15,6 +15,7 @@ const postCreateHandler = async (req, res) => {
             email: email,
             password: bcrypt.hashSync(password, 10, null),
             create_date: new Date(),
+            update_date: new Date()
         };
 
         if (contentType != 'application/json')

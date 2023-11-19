@@ -6,7 +6,7 @@ const { queryFindUserDB } = require('../model/findUser');
 const { getUserByEmail } = require('../model/getUserByEmail');
 const { updateUserToken } = require('../model/updateUserToken');
 
-let globalCache = new NodeCache({ stdTTL: 10 });
+let globalCache = new NodeCache({ stdTTL: 30 });
 
 const getLoginHandler = (req, res) => {
     res.send('Get Login');
@@ -41,24 +41,24 @@ const postLoginHandler = async (req, res) => {
                 // );
                 // console.log(resUpdateUserToken);
 
-                const resGetUserByEmail = await getUserByEmail(form_data);
-                inMemoryCache(
-                    resGetUserByEmail[0].id,
-                    resGetUserByEmail[0].token
-                );
-                console.log(
-                    'updated cache ttl by fetch token from DB: ' +
-                        globalCache.get(resQueryFindUserDB[0].id)
-                );
-
-                // const cache = inMemoryCache(
+                // const resGetUserByEmail = await getUserByEmail(form_data);
+                // setInMemoryCache(
                 //     resQueryFindUserDB[0].id,
-                //     auth_data.token
+                //     resQueryFindUserDB[0].token
                 // );
                 // console.log(
-                //     'new token in cache : ' +
-                //         cache.get(resQueryFindUserDB[0].id)
+                //     'updated cache ttl by fetch token from DB: ' +
+                //         globalCache.get(resQueryFindUserDB[0].id)
                 // );
+
+                const cache = setInMemoryCache(
+                    resQueryFindUserDB[0].id,
+                    auth_data.token
+                );
+                console.log(
+                    'new token in cache : ' +
+                        cache.get(resQueryFindUserDB[0].id)
+                );
             } else {
                 console.log(
                     'token: ' +
@@ -88,7 +88,7 @@ const postLoginHandler = async (req, res) => {
         return bcrypt.compareSync(data, password);
     }
 
-    function inMemoryCache(user_id, token) {
+    function setInMemoryCache(user_id, token) {
         globalCache.set(user_id, token);
         return globalCache;
     }
