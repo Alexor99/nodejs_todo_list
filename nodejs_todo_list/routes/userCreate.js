@@ -1,5 +1,5 @@
 const express = require('express');
-const { postCreateHandler } = require('../controllers/userCreate');
+const { postCreateHandler } = require('../controllers/userProfileActions/userCreate');
 
 const router = express.Router();
 

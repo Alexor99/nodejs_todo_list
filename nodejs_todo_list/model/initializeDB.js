@@ -1,6 +1,6 @@
-const { connection } = require('./connection');
+const { connection } = require('./connectionDB');
 
-const initializeDB = () => {
+async function initializeDB (){
     connection.connect((err) => {
         if (err) {
             console.log('Error occurred', err);
@@ -19,12 +19,16 @@ const initializeDB = () => {
         'token VARCHAR(255),' +
         'PRIMARY KEY(id))';
 
-    connection.query(query, function (err, rows) {
-        if (err) {
-            console.log('Error occurred', err);
-        } else {
-            console.log(rows);
-        }
+    return new Promise((resolve, reject) => {    
+        connection.query(query, function (err, rows) {
+            if (err) {
+                reject(err);
+                console.log('Error occurred', err);
+            } else {
+                resolve(rows);
+                console.log(rows);
+            }
+        });
     });
 };
 

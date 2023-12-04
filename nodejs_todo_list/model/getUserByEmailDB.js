@@ -1,16 +1,16 @@
-const { connection } = require('./connection');
+const { connection } = require('./connectionDB');
 
-function updateUserToken(token, id) {
+async function getUserByEmail(data) {
     return new Promise((resolve, reject) => {
         connection.query(
-            'UPDATE users SET token = ' + `${token}` + ' WHERE id = ' + id,
+            'SELECT * FROM users WHERE email =' + "'" + data.email + "'",
             function (err, rows) {
                 if (err) {
-                    console.log('Error occurred', err);
                     reject(err);
+                    console.log('Error occurred', err);
                 } else {
-                    console.log(rows);
                     resolve(rows);
+                    console.log(rows);
                 }
             }
         );
@@ -18,5 +18,5 @@ function updateUserToken(token, id) {
 }
 
 module.exports = {
-    updateUserToken,
+    getUserByEmail,
 };

@@ -2,7 +2,7 @@ const express = require('express');
 const {
     getLoginHandler,
     postLoginHandler,
-} = require('../controllers/userLogin');
+} = require('../controllers/userProfileActions/userLogin');
 
 const router = express.Router();
 

@@ -1,10 +1,10 @@
 const bcrypt = require('bcryptjs');
 const uuid = require('uuid');
 const NodeCache = require('node-cache');
-const { connection } = require('../model/connection');
-const { queryFindUserDB } = require('../model/findUser');
-const { getUserByEmail } = require('../model/getUserByEmail');
-const { updateUserToken } = require('../model/updateUserToken');
+const { connection } = require('../../model/connectionDB');
+const { queryFindUserDB } = require('../../model/findUserDB');
+const { getUserByEmail } = require('../../model/getUserByEmailDB');
+const { updateUserToken } = require('../../model/updateUserTokenDB');
 
 let globalCache = new NodeCache({ stdTTL: 30 });
 

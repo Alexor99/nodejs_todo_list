@@ -3,7 +3,7 @@ const userLogin = require('./userLogin');
 const userCreate = require('./userCreate');
 const rootHandler = require('./root');
 const users = require('./users');
-const { initializeDB } = require('../model/db_ddl_initialize');
+const { initializeDB } = require('../model/initializeDB');
 
 initializeDB();
 const router = express.Router();

@@ -1,11 +1,11 @@
 // const users = require('./userCreate');
-const { connection } = require('../model/connection');
+const { getUsersDB } = require('../../model/getUsersDB');
 
 const getUsers = async (req, res) => {
     try {
         const users = [];
 
-        const queryData = await queryDatabase();
+        const queryData = await getUsersDB();
 
         for (i in queryData) {
             users.push(JSON.parse(JSON.stringify(queryData[i])));
@@ -23,21 +23,6 @@ const getUsers = async (req, res) => {
             error: 1,
             description: err.message,
             utc: new Date().toUTCString(),
-        });
-    }
-
-    function queryDatabase() {
-        const query = 'SELECT * FROM users';
-
-        return new Promise((resolve, reject) => {
-            connection.query(query, (err, rows) => {
-                if (err) {
-                    console.log('Error occurred', err);
-                    reject(err);
-                } else {
-                    resolve(rows);
-                }
-            });
         });
     }
 };
