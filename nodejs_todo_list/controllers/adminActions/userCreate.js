@@ -1,10 +1,9 @@
 const bcrypt = require('bcryptjs');
-const { connection } = require('../../model/connectionDB');
 const { queryFindUserDB } = require('../../model/findUserDB');
 const { queryCreateUserDB } = require('../../model/createUserDB');
 const globalCache = require('../userProfileActions/userLogin');
 
-const postCreateHandler = async (req, res) => {
+const postCreateUserHandler = async (req, res) => {
     try {
         const email = req.body.email;
         const password = req.body.password;
@@ -57,5 +56,5 @@ const postCreateHandler = async (req, res) => {
 };
 
 module.exports = {
-    postCreateHandler,
+    postCreateUserHandler,
 };

@@ -1,9 +1,10 @@
 const { connection } = require('./connectionDB');
 
-async function updateUserToken(token, id) {
+async function updateUserToken(data, id) {
     return new Promise((resolve, reject) => {
         connection.query(
-            'UPDATE users SET token = ' + `${token}` + ' WHERE id = ' + id,
+            'UPDATE users_token SET? WHERE userId =' + `${id}`,
+            data,
             function (err, rows) {
                 if (err) {
                     reject(err);

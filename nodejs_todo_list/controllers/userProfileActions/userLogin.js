@@ -5,14 +5,16 @@ const { connection } = require('../../model/connectionDB');
 const { queryFindUserDB } = require('../../model/findUserDB');
 const { getUserByEmail } = require('../../model/getUserByEmailDB');
 const { updateUserToken } = require('../../model/updateUserTokenDB');
+const { createUserToken } = require('../../model/createUserTokenDB');
+const { findTokenByUser } = require('../../model/findTokenByUserdDB')
 
-let globalCache = new NodeCache({ stdTTL: 30 });
+let globalCache = new NodeCache({ stdTTL: 300 });
 
-const getLoginHandler = (req, res) => {
+const getLoginUserHandler = (req, res) => {
     res.send('Get Login');
 };
 
-const postLoginHandler = async (req, res) => {
+const postLoginUserHandler = async (req, res) => {
     try {
         const email = req.body.email;
         const password = req.body.password;
@@ -24,53 +26,24 @@ const postLoginHandler = async (req, res) => {
         console.log(resQueryFindUserDB[0].password);
         console.log(form_data.password);
 
+
         if (
             isValidPassword(form_data.password, resQueryFindUserDB[0].password)
         ) {
             console.log('valid pass');
+            
+            setUserToken(resQueryFindUserDB[0].id);
 
-            const auth_data = {};
-
-            if (globalCache.get(resQueryFindUserDB[0].id) == undefined) {
-                const uuid4 = uuid.v4();
-                auth_data.token = JSON.stringify(uuid4);
-
-                // const resUpdateUserToken = updateUserToken(
-                //     auth_data.token,
-                //     resQueryFindUserDB[0].id
-                // );
-                // console.log(resUpdateUserToken);
-
-                // const resGetUserByEmail = await getUserByEmail(form_data);
-                // setInMemoryCache(
-                //     resQueryFindUserDB[0].id,
-                //     resQueryFindUserDB[0].token
-                // );
-                // console.log(
-                //     'updated cache ttl by fetch token from DB: ' +
-                //         globalCache.get(resQueryFindUserDB[0].id)
-                // );
-
-                const cache = setInMemoryCache(
-                    resQueryFindUserDB[0].id,
-                    auth_data.token
-                );
-                console.log(
-                    'new token in cache : ' +
-                        cache.get(resQueryFindUserDB[0].id)
-                );
-            } else {
-                console.log(
-                    'token: ' +
-                        globalCache.get(resQueryFindUserDB[0].id) +
-                        ' still in cache'
-                );
-            }
-
+            const userInfo = {
+                userId: resQueryFindUserDB[0].id,
+                userToken: getUserToken(resQueryFindUserDB[0].id)
+            };
+            
             res.set('Content-Type', 'application/json').status(200).json({
                 error: 0,
                 description: 'OK',
                 utc: new Date().toUTCString(),
+                userInfo: userInfo
             });
         } else {
             throw new Error('password incorrect');
@@ -88,14 +61,73 @@ const postLoginHandler = async (req, res) => {
         return bcrypt.compareSync(data, password);
     }
 
-    function setInMemoryCache(user_id, token) {
-        globalCache.set(user_id, token);
+    function setInMemoryCache(userId, token) {
+        globalCache.set(userId, token);
         return globalCache;
+    }
+
+    async function setUserToken(userId) {
+        if (globalCache.get(userId) == undefined) {
+            const uuid4 = uuid.v4();
+            const auth_data = {};
+            auth_data.token = JSON.stringify(uuid4);
+
+            const cache = setInMemoryCache(
+                userId,
+                auth_data.token
+            );
+
+            const formUserIdInUserToken = {
+                id: userId
+            }
+
+            const resUserIdInUserToken = await findTokenByUser(formUserIdInUserToken)
+            console.log('resUserIdInUserToken = ' + resUserIdInUserToken[0].tokenId)
+
+            if(resUserIdInUserToken[0].count_tokenId !== 0) {
+
+                const formUpdateUserToken = {
+                    token: auth_data.token,
+                    update_date: new Date(),
+                    expire_date: new Date(globalCache.getTtl(userId))
+                }
+                const resUpdateUserToken = await updateUserToken(formUpdateUserToken, userId);
+                console.log('resUpdateUserToken = ' + resUpdateUserToken);
+            }
+            else {
+                const formInsertUserToken = {
+                    userId: userId,
+                    token: auth_data.token,
+                    create_date: new Date(),
+                    update_date: new Date(),
+                    expire_date: new Date(globalCache.getTtl(userId))
+                }
+                const resInsertUserToken =  await createUserToken(formInsertUserToken);
+                console.log('resInsertUserToken = ' + resInsertUserToken[0]);
+            }
+
+            console.log(globalCache.getTtl(userId));
+            console.log(new Date(globalCache.getTtl(userId)));            
+
+            console.log(
+                'new token in cache : ' +
+                    cache.get(userId)
+            );
+        } else {
+            console.log(
+                'token: ' +
+                    globalCache.get(userId) +
+                    ' still in cache'
+            );
+        }
+    }
+    function getUserToken(userId){
+        return globalCache.get(userId);
     }
 };
 
 module.exports = {
-    postLoginHandler,
-    getLoginHandler,
+    postLoginUserHandler,
+    getLoginUserHandler,
     globalCache,
 };

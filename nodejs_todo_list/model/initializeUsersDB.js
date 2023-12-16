@@ -1,13 +1,6 @@
 const { connection } = require('./connectionDB');
 
-async function initializeDB (){
-    connection.connect((err) => {
-        if (err) {
-            console.log('Error occurred', err);
-        } else {
-            console.log('Connected to MySQL Server');
-        }
-    });
+async function initializeUsers (){
 
     const query =
         'CREATE TABLE IF NOT EXISTS users' +
@@ -16,7 +9,6 @@ async function initializeDB (){
         'password VARCHAR(255), ' +
         'create_date DATETIME, ' +
         'update_date DATETIME, ' +
-        'token VARCHAR(255),' +
         'PRIMARY KEY(id))';
 
     return new Promise((resolve, reject) => {    
@@ -33,5 +25,5 @@ async function initializeDB (){
 };
 
 module.exports = {
-    initializeDB,
+    initializeUsers,
 };
