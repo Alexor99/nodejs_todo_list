@@ -36,7 +36,7 @@ const postLoginUserHandler = async (req, res) => {
 
             const userInfo = {
                 userId: resQueryFindUserDB[0].id,
-                userToken: getUserToken(resQueryFindUserDB[0].id)
+                userToken: getUserToken(resQueryFindUserDB[0].id).split('"').join('')
             };
             
             res.set('Content-Type', 'application/json').status(200).json({

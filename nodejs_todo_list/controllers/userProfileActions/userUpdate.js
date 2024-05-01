@@ -1,6 +1,7 @@
 const express = require('express');
-const globalCache = require('../userProfileActions/userLogin');
+const {globalCache} = require('../userProfileActions/userLogin');
 const {getTokenByUser} = require('../../model/getTokenByUserDB')
+const {updateUser} = require('../../model/updateUserDB')
 
 
 const putUpdateUserHandler = async (req, res) => {
@@ -8,12 +9,24 @@ const putUpdateUserHandler = async (req, res) => {
     try{
         const userId = req.params.userId;
         const token = req.query.token;
+        // const token = req.body.token;
+        const email = req.body.email;
+
         const body = req.body;
+        console.log(body)
 
 
-        const userTokenDB = await getUserToken(userId);
-        console.log(userTokenDB)
-
+        const userToken = await getUserToken(userId);
+        if(userToken.token != null){
+            if(verifyReqTokenEqualUserToken(userId, token) == true){
+                console.log('Requested token equal userToken')
+                executeUpdate(userId, body)
+            }
+            else {
+                console.log('Requested token NOT equal userToken')
+            }
+        }
+        
         res.set('Content-Type', 'application/json').status(200).json({
             error: 0,
             description: 'OK',
@@ -41,8 +54,33 @@ const putUpdateUserHandler = async (req, res) => {
 
 }
 
-async function isTokenValid(userId){
 
+ function verifyReqTokenEqualUserToken(userId, token){
+    let userToken = globalCache.get(userId).split('"').join('')
+    let compare = token.localeCompare(userToken)
+    console.log(compare)
+    if(userToken == token) {
+        return true
+    }
+    else {
+        return false
+    }
+}
+
+
+async function isTokenValid(userId){
+    let userToken = await getUserToken(userId)
+    if(userToken.token != null){
+        console.log(userToken.expire_date);
+        console.log(new Date);
+        if(userToken.expire_date > new Date){
+            return true
+        }
+        else {
+            return false
+        }
+
+    }
 }
 
 async function getUserToken(userId) {
@@ -50,11 +88,24 @@ async function getUserToken(userId) {
     if (globalCache.get(userId) == undefined) {
         // const resGetTokenByUser = await getTokenByUser(userId);
         // return resGetTokenByUser[0].token;
-        console.log('User hasnt active tokens. Please login again');
+        return {
+            token: null,
+            log: 'User hasnt active tokens. Please login again'
+        }
     }
     else{
-        return globalCache.get(userId);
+        return {
+            token: globalCache.get(userId),
+            expire_date: new Date(globalCache.getTtl(userId))
+        }
     }
+
+}
+
+async function executeUpdate(userId, body){
+  
+    const resUpdateUser  = await updateUser(body, userId);
+    console.log(resUpdateUser)
 
 }
 
